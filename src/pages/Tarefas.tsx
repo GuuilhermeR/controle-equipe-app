@@ -7,7 +7,7 @@ import {
   PlusOutlined, SearchOutlined, DeleteOutlined, UserOutlined, CalendarOutlined,
 } from '@ant-design/icons'
 import {
-  DndContext, DragOverlay, useSensor, useSensors,
+  DndContext, DragOverlay, useSensor, useSensors, useDroppable,
   PointerSensor, closestCorners,
   type DragStartEvent, type DragEndEvent, type DragOverEvent,
 } from '@dnd-kit/core'
@@ -131,6 +131,7 @@ function SortableColumn({
   isOver: boolean
 }) {
   const taskIds = useMemo(() => tasks.map((t) => t.id), [tasks])
+  const { setNodeRef } = useDroppable({ id: col.id })
 
   return (
     <Col xs={24} md={8} key={col.id}>
@@ -144,6 +145,7 @@ function SortableColumn({
       </div>
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
         <div
+          ref={setNodeRef}
           style={{
             display: 'flex', flexDirection: 'column', gap: 10, minHeight: 120,
             padding: 8, borderRadius: 12,
@@ -239,14 +241,14 @@ export default function Tarefas() {
     setModalOpen(false)
   }
 
-  function findColumnOfTask(taskId: string): string | null {
+  const findColumnOfTask = useCallback((taskId: string): string | null => {
     for (const col of columns) {
       if (filtered.some((t) => t.status === col.id && t.id === taskId)) {
         return col.id
       }
     }
     return null
-  }
+  }, [filtered])
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string)
@@ -260,7 +262,7 @@ export default function Tarefas() {
     }
     const colId = columns.find((c) => c.id === overId)?.id ?? findColumnOfTask(overId)
     setOverColumnId(colId ?? null)
-  }, [filtered])
+  }, [findColumnOfTask])
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     setActiveId(null)
@@ -279,7 +281,7 @@ export default function Tarefas() {
     if (sourceColumn !== targetColumn) {
       move(activeTaskId, targetColumn as Tarefa['status'])
     }
-  }, [filtered, move])
+  }, [findColumnOfTask, move])
 
   const activeTask = useMemo(() => {
     if (!activeId) return null

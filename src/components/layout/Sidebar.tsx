@@ -5,6 +5,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Layout, Menu, theme } from 'antd'
 import { cn } from '../../lib/utils'
+import type { AppUser } from '../../lib/auth'
 
 const { Sider } = Layout
 
@@ -22,9 +23,11 @@ interface SidebarProps {
   onToggle: () => void
   mobileOpen: boolean
   onMobileClose: () => void
+  onLogout: () => void
+  currentUser: AppUser
 }
 
-export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
+export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose, onLogout, currentUser }: SidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { token } = theme.useToken()
@@ -135,7 +138,9 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
                   background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
                 }}
               >
-                <span style={{ fontSize: 12, color: '#fff', fontWeight: 700 }}>A</span>
+                <span style={{ fontSize: 12, color: '#fff', fontWeight: 700 }}>
+                  {currentUser.name.slice(0, 1).toUpperCase()}
+                </span>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div
@@ -146,7 +151,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}
                 >
-                  Admin
+                  {currentUser.name}
                 </div>
                 <div
                   style={{
@@ -156,10 +161,15 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}
                 >
-                  admin@equipepro.com
+                  {currentUser.email}
                 </div>
               </div>
-              <LogOut size={15} style={{ color: token.colorTextTertiary, flexShrink: 0, cursor: 'pointer' }} />
+              <LogOut
+                size={15}
+                aria-label="Sair"
+                onClick={onLogout}
+                style={{ color: token.colorTextTertiary, flexShrink: 0, cursor: 'pointer' }}
+              />
             </div>
 
             <div
